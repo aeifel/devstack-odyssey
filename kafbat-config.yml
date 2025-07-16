@@ -1,0 +1,12 @@
+#Config to let kafbat ui know about the Kafka cluster and connect service
+# This file is used to configure the kafbat-ui service in the docker-compose setup.
+# It specifies the Kafka cluster and the Kafka Connect service for dynamic configuration.
+
+kafka:
+  clusters:
+    - name: kafka-bat-cluster
+      bootstrap-servers: kafka1:19092
+
+      kafka-connect:
+        - name: kafka-connect
+          address: http://connect:8083

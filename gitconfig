@@ -1,0 +1,33 @@
+[core]
+    whitespace = nowarn
+    editor = vim
+    pager = less -FRSX
+[color]
+    ui = auto
+    diff = auto
+    status = auto
+    branch = auto
+[alias]
+    spull = !git-svn fetch && git-svn rebase
+    spush = !git-svn dcommit
+    send = !git spull && git spush
+    co = checkout
+    ci = commit
+    ca = commit -a
+    br = branch
+    st = status
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+    undo = reset --hard
+    changes=diff --name-status -r
+    diffstat=diff --stat -r
+    serve = daemon --reuseaddr --verbose  --base-path=. --export-all ./.git
+    whois = "!sh -c 'git log -i -1 --pretty="format:%an <%ae>\n" --author=""' -"
+    whatis = show -s --pretty='tformat:%h (%s, %ad)' --date=short
+    edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; vim `f`"
+    add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
+[giggle]
+    main-window-maximized = true
+    main-window-geometry = 700x550+66+24
+    history-view-vpane-position = 281
+    main-window-view = HistoryView
+    file-view-vpane-position = 460

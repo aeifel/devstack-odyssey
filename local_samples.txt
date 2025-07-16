@@ -1,0 +1,130 @@
+'''
+Sample code references
+'''
+
+CONTAINER CONFIGS:
+
+kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    restart: "no"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka1:19092"
+      JVM_OPTS: "-Xms16M -Xmx512M -Xss180K"
+    ports:
+      - 9000:9000
+    depends_on:
+      - kafka1
+
+
+
+debezium/connect:2.5
+
+kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    networks:
+      - kafka-cluster
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9092,kafka2:9092,kafka3:9092
+
+
+connect-ui:
+    image: quay.io/debezium/debezium-ui:2.5
+    container_name: connect-ui
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CONNECT_URIS: http://connect:8083
+    volumes:
+      - ./ui/connector-types:/debezium/ui/connector-types:ro
+    networks:
+      - kafconzoo
+
+
+kafka-connect-ui:
+    image: landoop/kafka-connect-ui:0.9.7
+    container_name: kafka-connect-ui
+    restart: unless-stopped
+    ports:
+      - "8090:8000"
+    environment:
+      CONNECT_URL: http://connector:8083
+      PROXY: "true"
+
+
+kafbat-ui:
+    container_name: kafbat-ui
+    image: ghcr.io/kafbat/kafka-ui:latest
+    ports:
+      - 8080:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+
+
+kafbat-ui:
+    image: ghcr.io/kafbat/kafka-ui:latest
+    container_name: kafbat-ui
+    ports:
+      - 8080:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    volumes:
+      - ./kafbat-config.yml:/etc/kafkaui/dynamic_config.yaml
+    extra_hosts:
+      - "IP_ADDRESS:172.17.0.1"
+    networks:
+      - kafconzoo
+
+
+########################################################################################################################
+########################################################################################################################
+
+CONNECTOR CONFIGS:
+### Setup replication set in mongodb instance before this
+'''
+Use mongosh --host hostname:port
+
+>>> rs.initiate()
+
+AND make sure the host name in rs.conf() -> members, matches the host name in connector config
+Else modify the rs.conf with:
+
+>>> cfg = rs.conf()
+>>> cfg.members[0].host = "DESIRED_HOSTNAME:27017"
+>>> rs.reconfig(cfg, {force: true})
+'''
+
+Mongodb:
+
+{
+  "connector.class": "io.debezium.connector.mongodb.MongoDbConnector",
+  "mongodb.connection.string": "mongodb://appuser:@localhost:27017/?replicaSet=rs0",
+  "database.hostname": "localhost",
+  "database.port": "27017",
+  "database.user": "appuser",
+  "database.password": "",
+  "database.dbname": "platform",
+  "topic.prefix": "mongo"
+}
+
+# USE THIS
+{
+  "connector.class": "io.debezium.connector.mongodb.MongoDbConnector",
+  "mongodb.name": "dbserver1",
+  "mongodb.connection.string": "mongodb://mongodb:27017/?replicaSet=rs0",
+  "topic.prefix": "mongo",
+  "output.format.key": "json",
+  "output.format.value": "json",
+  "output.schema.include": "false"
+}
+
+########################################################################################################################
+########################################################################################################################
+
