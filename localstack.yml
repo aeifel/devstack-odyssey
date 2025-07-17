@@ -1,0 +1,8 @@
+services:
+  localstack:
+    image: localstack/localstack:4.6.0
+    container_name: localstack
+    ports:
+      - 4566:4566
+    environment:
+      - DEBUG=1
