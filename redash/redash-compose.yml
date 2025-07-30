@@ -1,0 +1,70 @@
+version: "2"
+
+services:
+  redash-postgres:
+    image: postgres:16
+    container_name: redash_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - theia
+
+  redash-redis:
+    image: redis:8.0.3
+    container_name: redash_redis
+    restart: unless-stopped
+    networks:
+      - theia
+
+  redash-server:
+    image: redash/redash:25.1.0
+    container_name: redash_server
+    networks:
+      - theia
+    environment:
+      - REDASH_DATABASE_URL=${REDASH_DATABASE_URL}
+      - REDASH_REDIS_URL=${REDASH_REDIS_URL}
+      - REDASH_COOKIE_SECRET=${REDASH_COOKIE_SECRET}
+      - REDASH_SECRET_KEY=${REDASH_SECRET_KEY}
+      - REDASH_HOST=${REDASH_HOST}
+      - REDASH_LOG_LEVEL=${REDASH_LOG_LEVEL}
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
+      - REDASH_RATELIMIT_ENABLED=${REDASH_RATELIMIT_ENABLED}
+      - REDASH_WORKER_TIMEOUT=180
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redash-postgres
+      - redash-redis
+  
+  redash-scheduler:
+    image: redash/redash:25.1.0
+    container_name: redash_scheduler
+    depends_on:
+      - redash-server
+    environment:
+      - REDASH_DATABASE_URL=${REDASH_DATABASE_URL}
+      - REDASH_REDIS_URL=${REDASH_REDIS_URL}
+      - REDASH_COOKIE_SECRET=${REDASH_COOKIE_SECRET}
+    command: scheduler
+    networks:
+      - theia
+
+  redash-worker:
+    image: redash/redash:25.1.0
+    container_name: redash_worker
+    depends_on:
+      - redash-server
+    environment:
+      - REDASH_DATABASE_URL=${REDASH_DATABASE_URL}
+      - REDASH_REDIS_URL=${REDASH_REDIS_URL}
+    command: worker
+    networks:
+      - theia
+
+networks:
+  theia:
+    name: theia
+    external: true
+
