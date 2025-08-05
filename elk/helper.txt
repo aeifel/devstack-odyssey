@@ -1,0 +1,38 @@
+Start the elasticsearch container first.
+-> Then try to get the service token for elastic/kibana - so that kibana doesnt need any username/password creds to access es but through this token.
+
+COMMAND:
+docker exec -it es1 bin/elasticsearch-service-tokens create elastic/kibana kibana-token
+
+Then paste the token in kibana yaml configuration file.
+Then start the kibana container (alone).
+
+If the es container is also re-started, then the service token is formatted - since the place where the token is stored is not persisted. 
+Else, need to persist the file.
+
+COMMANDS TO CHECK ES TOKEN LISTs:
+>>> docker exec -it es1 bin/elasticsearch-service-tokens list
+>>> docker exec -it es1 cat config/service_tokens
+
+
+COMMAND TO CHECK ES CONFIG INSIDE CONTAINER:
+>>> docker exec -it es1 cat /usr/share/elasticsearch/config/elasticsearch.yml
+
+COMMAND TO CHECK KIBANA CONFIG INSIDE CONTAINER:
+>>> docker exec -it kibana cat /usr/share/kibana/config/kibana.yml
+
+### CONFIGURING the environment variables through config yamls is recommended.
+Since the practice of getting the envs from docker environments is degraded for security related concerns.
+
+
+THESE ARE THE COMMANDS TO CHECK IF THE AUTHENTICATION ARE WORKING WELL AND GOOD:
+>>> curl -k http://localhost:9200
+>>> curl -u elastic:password http://localhost:9200/_security/_authenticate\n
+>>> curl -u elastic:password "http://localhost:9200/_nodes?filter_path=nodes.*.version,nodes.*.http.publish_address,nodes.*.ip"\n
+>>> curl -H "Authorization: Bearer AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYS10b2tlbjo4UlZweU9aWlFTbUo0VDhzYkdGd0tn" http://localhost:9200/_security/_authenticate
+
+Replace http://localhost:9200 with http://es1:9200 to check es reachability from within kibana container.
+
+#TODO:
+Use ELK to capture Heartbeat, MetricBeat and PacketBeat - for observability purposes.
+-- Then application-logs and traces - (NOTE: openTelemetry Dashboard, Jaeger Dashboard)
